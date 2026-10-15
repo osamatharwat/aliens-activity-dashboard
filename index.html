@@ -51,7 +51,7 @@ main{padding:28px clamp(18px,3vw,42px) 50px;max-width:1600px;width:100%;margin:a
    <select id="committeeFilter" aria-label="اللجنة"><option value="all">كل اللجان</option></select>
    <button class="btn" id="resetFilters">إعادة ضبط</button>
   </div>
-  <div class="demo-banner" id="demoBanner">ⓘ <span><strong>وضع المعاينة:</strong> الأرقام المعروضة بيانات توضيحية للتجربة وليست بيانات ALIENS الفعلية. ارفع ملفك أو أضف مصدرًا لبدء التحليل الحقيقي.</span></div>
+  <div class="demo-banner" id="demoBanner">ⓘ <span><strong>مصدر البيانات: Google Sheets. لن تظهر مؤشرات فعلية قبل تسجيل البيانات في الشيتات.</span></div>
   <div class="kpis" id="kpiGrid"></div>
   <div class="grid2">
    <article class="panel"><div class="panel-head"><div><h2>الأداء الشهري</h2><p>مقارنة الإنجاز الفعلي بالأهداف المحددة</p></div><span class="small-pill">شهري</span></div><div class="chart-wrap"><canvas id="trendChart" aria-label="الرسم الشهري"></canvas></div></article>
@@ -78,19 +78,19 @@ main{padding:28px clamp(18px,3vw,42px) 50px;max-width:1600px;width:100%;margin:a
  </section>
 
  <section class="page" id="page-data">
-  <div class="section-title"><h2>إدارة البيانات</h2><p>ارفع Excel أو CSV لتحليل بياناتك محليًا، من غير إرسال الملف لخادم خارجي.</p></div>
+  <div class="section-title"><h2>إدارة البيانات</h2><p>قراءة مباشرة من Google Sheets فقط؛ لا يتم استخدام ملفات محلية أو بيانات المتصفح.</p></div>
   <div class="grid2"><article class="panel"><div class="panel-head"><div><h2>استيراد ملف</h2><p>يدعم XLSX وXLS وCSV</p></div><span class="small-pill">معالجة داخل المتصفح</span></div>
-   <div style="border:1px dashed #45684a;background:#0a160d;border-radius:15px;padding:26px;text-align:center"><div style="font-size:36px;color:var(--green)">⇧</div><h3 style="margin:8px 0">اسحب الملف أو اختاره</h3><p style="color:var(--muted);font-size:12px">يفضل أن يحتوي على أعمدة مثل: اللجنة، التاريخ، التفاعلات، المهام، الفعاليات، الهدف.</p><input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="max-width:100%;margin-top:12px;color:var(--muted)"><div style="margin-top:14px"><button class="btn" id="sampleBtn">تحميل قالب CSV</button></div></div>
+   <div style="border:1px dashed #45684a;background:#0a160d;border-radius:15px;padding:26px;text-align:center"><div style="font-size:36px;color:var(--green)">⇧</div><h3 style="margin:8px 0">اسحب الملف أو اختاره</h3><p style="color:var(--muted);font-size:12px">يفضل أن يحتوي على أعمدة مثل: اللجنة، التاريخ، التفاعلات، المهام، الفعاليات، الهدف.</p><input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="max-width:100%;margin-top:12px;color:var(--muted)"><div style="margin-top:14px"><span class="muted">القراءة التلقائية من الشيتات المسجلة</span></div></div>
    <div class="note" style="margin-top:14px"><strong>مهم:</strong> الاستيراد الحالي يقرأ أول ورقة بيانات. راجع الأعمدة المقروءة قبل الاعتماد على الأرقام، وتجنب رفع أسماء أو أرقام أو بيانات شخصية إلى صفحة عامة.</div>
   </article>
-  <article class="panel"><div class="panel-head"><div><h2>حالة البيانات</h2><p>المصدر المستخدم حاليًا</p></div></div><div id="dataStatus"></div><div style="margin-top:18px;display:flex;gap:9px;flex-wrap:wrap"><button class="btn primary" id="useDemoBtn">استخدام بيانات تجريبية</button><button class="btn danger" id="clearDataBtn">مسح بيانات الملف</button></div></article></div>
+  <article class="panel"><div class="panel-head"><div><h2>حالة البيانات</h2><p>المصدر المستخدم حاليًا</p></div></div><div id="dataStatus"></div><div style="margin-top:18px;display:flex;gap:9px;flex-wrap:wrap"><button class="btn primary" id="refreshSourcesBtn2">تحديث البيانات الآن</button></div></article></div>
   <article class="panel"><div class="panel-head"><div><h2>معاينة الصفوف</h2><p id="previewCount">لا توجد بيانات مستوردة</p></div><button class="btn" id="exportCleanBtn">تصدير البيانات المعروضة</button></div><div class="table-wrap" id="previewTable"><div class="empty">ارفع ملفًا لعرض البيانات هنا.</div></div></article>
  </section>
 
  <section class="page" id="page-settings">
   <div class="section-title"><h2>الإعدادات ومصادر البيانات</h2><p>إدارة اللجان، الأهداف، وروابط Google Forms وSheets.</p></div>
   <div class="settings-grid">
-   <article class="panel"><div class="panel-head"><div><h2 id="committeeFormTitle">إضافة لجنة جديدة</h2><p>الإعدادات محفوظة في هذا المتصفح فقط حاليًا.</p></div></div>
+   <article class="panel"><div class="panel-head"><div><h2 id="committeeFormTitle">إضافة لجنة جديدة</h2><p>إعدادات العرض مؤقتة؛ مصدر السجلات الوحيد هو Google Sheets.</p></div></div>
     <form id="committeeForm"><input type="hidden" id="editingId"><div class="form-grid">
      <div class="field"><label for="name">اسم اللجنة *</label><input id="name" required placeholder="مثال: Marketing"></div>
      <div class="field"><label for="owner">المسؤول (اختياري)</label><input id="owner" placeholder="اسم المسؤول أو الدور"></div>
@@ -107,7 +107,7 @@ main{padding:28px clamp(18px,3vw,42px) 50px;max-width:1600px;width:100%;margin:a
    <div style="display:grid;gap:16px;align-content:start">
     <article class="panel"><div class="panel-head"><div><h2>المصادر المسجلة</h2><p>افتح الروابط أو حدّث مصدر CSV المنشور.</p></div><button class="btn" id="refreshSourcesBtn">↻ تحديث</button></div><div class="source-list" id="sourceList"></div></article>
     <article class="panel"><div class="panel-head"><div><h2>الهدف العام</h2><p>إعداد المؤشر الأساسي للنشاط</p></div></div><div class="field"><label for="globalGoal">التفاعلات المستهدفة شهريًا</label><input type="number" id="globalGoal" min="0" value="5000"></div><button class="btn primary" id="saveGlobalGoal">حفظ الهدف</button></article>
-    <article class="panel"><div class="panel-head"><div><h2>الربط الآمن</h2></div></div><div class="note"><strong>النسخة الحالية:</strong> واجهة ثابتة على GitHub Pages، والبيانات المستوردة والإعدادات محفوظة محليًا في المتصفح.<br><strong>للأتمتة الخاصة:</strong> نحتاج طبقة وسيطة مثل Google Apps Script بصلاحيات مناسبة، أو Backend آمن. لا تضع مفاتيح API أو بيانات دخول داخل ملفات الموقع العامة.</div></article>
+    <article class="panel"><div class="panel-head"><div><h2>الربط الآمن</h2></div></div><div class="note"><strong>النسخة الحالية:</strong> واجهة GitHub Pages تقرأ البيانات من Google Apps Script، والمصدر الوحيد للسجلات هو Google Sheets.<br><strong>للأتمتة الخاصة:</strong> نحتاج طبقة وسيطة مثل Google Apps Script بصلاحيات مناسبة، أو Backend آمن. لا تضع مفاتيح API أو بيانات دخول داخل ملفات الموقع العامة.</div></article>
    </div>
   </div>
  </section>
@@ -137,19 +137,20 @@ const baseCommittees=[
 {id:'treasure',name:'Treasure',owner:'',goal:1000,metric:'tasks',description:'',formUrl:'',sheetUrl:'',sourceMode:'manual',publishedUrl:''},
 {id:'charity',name:'Charity',owner:'',goal:1000,metric:'events',description:'',formUrl:'',sheetUrl:'',sourceMode:'manual',publishedUrl:''}
 ];
-const load=(key,fallback)=>{try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch{return fallback}};
-let committees=load('aliens_committees_v1',baseCommittees);
-let rows=[]; // Start empty; no demo or stale local rows are loaded.
+// Remove legacy browser-cached dashboard data. No dashboard data is read from or written to localStorage.
+try { localStorage.clear(); } catch (_) {}
+let committees=baseCommittees.map(c=>({...c}));
+let rows=[];
 let isDemo=false;
-let globalGoal=Number(load('aliens_global_goal_v1',5000))||5000;
-let lastFile=load('aliens_file_name_v1','');
+let globalGoal=5000;
+let lastFile='';
 let charts={};
 const metricLabels={interactions:'التفاعلات',tasks:'المهام المكتملة',events:'الفعاليات',registrations:'التسجيلات'};
 const monthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 const num=n=>Number(n||0).toLocaleString('en-US');
 const pct=(n,d)=>d?Math.round(n/d*100):0;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const save=()=>{try{localStorage.setItem('aliens_committees_v1',JSON.stringify(committees));localStorage.setItem('aliens_rows_v1',JSON.stringify(rows));localStorage.setItem('aliens_is_demo_v1',JSON.stringify(isDemo));localStorage.setItem('aliens_global_goal_v1',JSON.stringify(globalGoal));localStorage.setItem('aliens_file_name_v1',JSON.stringify(lastFile))}catch(e){toast('تعذر الحفظ المحلي. مساحة التخزين قد تكون ممتلئة.')}};
+const save=()=>{}; // Google Sheets is the only record source.
 function toast(m){const el=$('#toast');el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800)}
 function currentMonth(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 function normalDate(s){if(!s)return '';if(s instanceof Date&&!isNaN(s))return s.toISOString().slice(0,10);const d=new Date(s);return isNaN(d)?String(s).slice(0,10):d.toISOString().slice(0,10)}
@@ -180,7 +181,10 @@ function renderCommittees(){const q=($('#committeeSearch')?.value||'').toLowerCa
 function renderPerformance(){const m=$('#metricFilter')?.value||'interactions',c=$('#performanceCommittee')?.value||'all',months=[...new Set(rows.map(r=>monthOf(r.date)).filter(Boolean))].sort();const list=rows.filter(r=>c==='all'||r.committee===c);const opts=chartDefaults();mkChart('perfLine',{type:'line',data:{labels:months.map(x=>monthNames[Number(x.slice(5,7))-1]+' '+x.slice(2,4)),datasets:[{label:metricLabels[m],data:months.map(mm=>list.filter(r=>monthOf(r.date)===mm).reduce((a,r)=>a+(Number(r[m])||0),0)),borderColor:COLORS.green,backgroundColor:'#8be45e18',fill:true,tension:.3}]},options:{...opts,plugins:{...opts.plugins,legend:{display:false}}}});
 const sums=summarize(list);const top=sums.filter(x=>x[m]||x.goal).sort((a,b)=>b[m]-a[m]).slice(0,10);mkChart('perfBar',{type:'bar',data:{labels:top.map(x=>x.name),datasets:[{label:metricLabels[m],data:top.map(x=>x[m]),backgroundColor:COLORS.green2,borderRadius:5}]},options:{...opts,plugins:{...opts.plugins,legend:{display:false}}}});
 $('#perfTable').innerHTML='<table><thead><tr><th>اللجنة</th><th>المؤشر</th><th>الفعلي</th><th>المستهدف</th><th>الإنجاز</th></tr></thead><tbody>'+sums.map(x=>{const goal=x.goal||0,val=x[m]||0;return '<tr><td>'+esc(x.name)+'</td><td>'+esc(metricLabels[m])+'</td><td>'+num(val)+'</td><td>'+num(goal)+'</td><td>'+pct(val,goal)+'%</td></tr>'}).join('')+'</tbody></table>'}
-function renderSources(){$('#sourceList').innerHTML=committees.filter(c=>c.formUrl||c.sheetUrl||c.publishedUrl).map(c=>'<div class="source-row"><div class="s-icon">↗</div><div class="s-content"><b>'+esc(c.name)+'</b><small>'+(c.publishedUrl?'CSV: '+esc(c.publishedUrl):'Google links')+'</small></div>'+(c.sheetUrl?'<a class="btn" href="'+esc(c.sheetUrl)+'" target="_blank" rel="noopener">Sheet</a>':'')+(c.formUrl?'<a class="btn" href="'+esc(c.formUrl)+'" target="_blank" rel="noopener">Form</a>':'')+(c.publishedUrl?'<button class="btn" data-refresh="'+esc(c.id)+'">تحديث CSV</button>':'')+'</div>').join('')||'<div class="empty">مفيش مصادر مضافة. أضف لجنة واربطها بمصدر من النموذج.</div>';$('#sourceList').querySelectorAll('[data-refresh]').forEach(b=>b.onclick=()=>refreshPublished(b.dataset.refresh));$('#dataStatus').innerHTML='<div class="insight"><span class="bullet"></span><div><b>'+esc(isDemo?'بيانات تجريبية':'بيانات مستوردة')+'</b><p>'+(isDemo?'لم يتم رفع ملف فعلي بعد.':'الملف الحالي: '+esc(lastFile||'لا توجد ملفات مستوردة'))+'</p></div></div><div class="insight"><span class="bullet"></span><div><b>عدد السجلات المحلية: '+num(rows.length)+'</b><p>السجلات المحلية منفصلة عن مصادر Google Sheets.</p></div></div>'+renderApiStatus()}
+function renderSources(){
+ $('#sourceList').innerHTML=(apiData?.committees||[]).map(c=>'<div class="source-row"><div class="s-icon">↗</div><div class="s-content"><b>'+esc(c.committee)+'</b><small>'+esc(c.sourceName||'Google Sheets')+' · '+num(c.rowCount||0)+' سجل · '+(c.tabs||[]).length+' أوراق</small></div><span class="status '+((c.rowCount||0)>0?'ok':'warn')+'">'+((c.rowCount||0)>0?'بيانات موجودة':'الشيت فارغ')+'</span></div>').join('')||'<div class="empty">جاري تحميل مصادر Google Sheets…</div>';
+ $('#dataStatus').innerHTML='<div class="insight"><span class="bullet"></span><div><b>المصدر الوحيد: Google Sheets</b><p>السجلات المقروءة: '+num(rows.length)+'. لا يتم استخدام تخزين المتصفح كمصدر للبيانات.</p></div></div>'+renderApiStatus();
+}
 function renderApiStatus(){
  const stateTitle=apiState==='ok'?'اتصال Google Sheets نشط':apiState==='loading'?'جاري الاتصال بمصادر Google Sheets…':'تعذر جلب الاستجابة مؤقتًا';
  const stateText=apiState==='ok'
@@ -212,11 +216,27 @@ async function loadApiData(){
   const data=await requestApi('dashboard');
   if(!data||data.ok!==true)throw new Error('الاستجابة غير متوقعة');
   apiData=data;apiState='ok';apiError='';
+  rows=normalizeApiData(data);
+  committees=mergeApiCommittees(data,committees);
+  lastFile='Google Sheets';
  }catch(err){
   apiState='error';apiError='فشل الاتصال بعد 3 محاولات. اضغط إعادة الاختبار لاحقًا.';
   console.error('ALIENS API:',err);
  }
  renderSources();
+}
+function normalizeApiData(data){
+ const out=[];
+ (data.committees||[]).forEach(c=>(c.tabs||[]).forEach(tab=>(tab.records||[]).forEach(r=>{
+  const date=normalDate(r.date||'');
+  out.push({date,committee:c.committee,interactions:Number(r.interactions||r.messages||r.reach||r.followers||0)||0,tasks:Number(r.tasks||0)||0,events:0,registrations:0,target:Number(r.target||0)||0,status:r.status||'',outcome:r.outcome||'',reportType:r.reportType||'',sheet:tab.sheetName||''});
+ })));
+ return out;
+}
+function mergeApiCommittees(data,base){
+ const known=new Map(base.map(c=>[c.name.toLowerCase(),c]));
+ (data.committees||[]).forEach(src=>{const key=String(src.committee||'').toLowerCase();if(!known.has(key))known.set(key,{id:key.replace(/[^a-z0-9]+/g,'-')||('committee-'+known.size),name:src.committee,owner:'',goal:1000,metric:'tasks',description:'مؤشرات مستخرجة مباشرة من Google Sheets.',formUrl:'',sheetUrl:'',sourceMode:'sheets',publishedUrl:''});});
+ return [...known.values()];
 }
 function renderPreview(){const data=rows.slice(0,15);$('#previewCount').textContent=rows.length+' سجل · عرض أول '+data.length;$('#previewTable').innerHTML=data.length?'<table><thead><tr><th>التاريخ</th><th>اللجنة</th><th>التفاعلات</th><th>المهام</th><th>الفعاليات</th><th>التسجيلات</th><th>الهدف</th></tr></thead><tbody>'+data.map(r=>'<tr><td>'+esc(r.date)+'</td><td>'+esc(r.committee)+'</td><td>'+num(r.interactions)+'</td><td>'+num(r.tasks)+'</td><td>'+num(r.events)+'</td><td>'+num(r.registrations)+'</td><td>'+num(r.target)+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">لا توجد بيانات لعرضها.</div>'}
 function renderAll(){fillFilters();renderOverview();renderCommittees();renderSources();renderPreview();$('#globalGoal').value=globalGoal}
@@ -234,13 +254,9 @@ $('#committeeSearch').addEventListener('input',renderCommittees);
 $('#monthFilter').addEventListener('change',renderOverview);$('#committeeFilter').addEventListener('change',renderOverview);
 $('#resetFilters').onclick=()=>{$('#monthFilter').value='all';$('#committeeFilter').value='all';renderOverview()};
 $('#performanceCommittee').addEventListener('change',renderPerformance);$('#metricFilter').addEventListener('change',renderPerformance);
-$('#globalGoal').value=globalGoal;$('#saveGlobalGoal').onclick=()=>{globalGoal=Math.max(0,Number($('#globalGoal').value)||0);save();renderOverview();toast('تم حفظ الهدف العام')};
-$('#refreshSourcesBtn').onclick=async()=>{const sources=committees.filter(c=>c.publishedUrl);if(!sources.length){toast('أضف رابط CSV منشور لتفعيل التحديث');return}for(const c of sources)await refreshPublished(c.id)};
-async function refreshPublished(id){const c=committees.find(c=>c.id===id);if(!c?.publishedUrl)return;try{if(!safeUrl(c.publishedUrl))throw new Error('رابط غير صحيح');const res=await fetch(c.publishedUrl,{cache:'no-store'});if(!res.ok)throw new Error('تعذر جلب الملف');const text=await res.text();const parsed=parseCSV(text);if(!parsed.length)throw new Error('المصدر لا يحتوي على صفوف بيانات');const normalized=normalizeRows(parsed).map(r=>({...r,committee:c.name}));if(!normalized.length)throw new Error('لم يتم التعرف على الأعمدة');rows=rows.filter(r=>r.committee!==c.name).concat(normalized);isDemo=false;lastFile='Google Sheets CSV';save();renderAll();toast('تم تحديث بيانات '+c.name)}catch(err){toast('فشل التحديث: تأكد من نشر CSV وإتاحة الوصول للقراءة العامة. قد يمنع CORS القراءة من المتصفح. عندها استخدم Google Apps Script وسيطًا آمنًا.');console.error(err)}}
-function parseCSV(text){const lines=text.replace(/^\uFEFF/,'').split(/\r?\n/).filter(x=>x.trim());if(lines.length<2)return [];function parseLine(line){const a=[];let s='',q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"'&&q&&line[i+1]==='"'){s+='"';i++}else if(ch==='"')q=!q;else if(ch===','&&!q){a.push(s);s=''}else s+=ch}a.push(s);return a}const headers=parseLine(lines[0]).map(x=>x.trim());return lines.slice(1).map(l=>{const vals=parseLine(l);return Object.fromEntries(headers.map((h,i)=>[h,(vals[i]||'').trim()]))})}
-$('#fileInput').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const buf=await f.arrayBuffer();let parsed;if(f.name.toLowerCase().endsWith('.csv'))parsed=parseCSV(new TextDecoder().decode(buf));else{if(!window.XLSX)throw new Error('مكتبة Excel غير متاحة. تحقق من الاتصال بالإنترنت.');const wb=XLSX.read(buf,{type:'array',cellDates:true});const ws=wb.Sheets[wb.SheetNames[0]];parsed=XLSX.utils.sheet_to_json(ws,{defval:''})}const norm=normalizeRows(parsed);if(!norm.length)throw new Error('مفيش صفوف بيانات واضحة. افحص أسماء الأعمدة.');rows=norm;isDemo=false;lastFile=f.name;save();renderAll();toast('تم استيراد '+num(rows.length)+' سجل بنجاح')}catch(err){alert('تعذر استيراد الملف: '+err.message)}finally{e.target.value=''}});
-$('#useDemoBtn').onclick=()=>{if(confirm('هترجع لبيانات تجريبية توضيحية. استمرار؟')){rows=demoRows;isDemo=true;lastFile='';save();renderAll();toast('تم تفعيل بيانات المعاينة')}};
-$('#clearDataBtn').onclick=()=>{if(confirm('مسح السجلات المستوردة من هذا المتصفح؟')){rows=[];isDemo=false;lastFile='';save();renderAll();toast('تم مسح السجلات')}};
+$('#globalGoal').value=globalGoal;$('#saveGlobalGoal').onclick=()=>{globalGoal=Math.max(0,Number($('#globalGoal').value)||0);renderOverview();toast('تم تحديث الهدف للجلسة الحالية فقط')};
+$('#refreshSourcesBtn').onclick=()=>loadApiData();
+$('#refreshSourcesBtn2')?.addEventListener('click',()=>loadApiData());
 function download(name,content,type='text/csv;charset=utf-8;'){const blob=new Blob(['\uFEFF'+content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
 const csvFromRows=(data)=>{const headers=['date','committee','interactions','tasks','events','registrations','target'];const cell=v=>{const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};return [headers.join(','),...data.map(r=>headers.map(h=>cell(r[h])).join(','))].join('\n')};
 $('#sampleBtn').onclick=()=>download('aliens-data-template.csv','date,committee,interactions,tasks,events,registrations,target\n2026-10-01,Marketing,1250,8,1,40,5000\n2026-10-02,PR,300,4,0,18,1800');
