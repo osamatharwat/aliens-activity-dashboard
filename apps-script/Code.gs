@@ -50,10 +50,10 @@ function getSources() {
 
 function doGet(e) {
   const action = e && e.parameter && e.parameter.action ? e.parameter.action : 'dashboard';
-  if (action === 'health') return json_({ ok: true, service: 'ALIENS Dashboard API', version: 1 });
-  if (action === 'schema') return json_({ ok: true, sources: getSchemaReport_() });
-  if (action === 'dashboard') return json_(buildDashboardData_());
-  return json_({ ok: false, error: 'Unknown action' });
+  if (action === 'health') return json_({ ok: true, service: 'ALIENS Dashboard API', version: 1 }, e);
+  if (action === 'schema') return json_({ ok: true, sources: getSchemaReport_() }, e);
+  if (action === 'dashboard') return json_(buildDashboardData_(), e);
+  return json_({ ok: false, error: 'Unknown action' }, e);
 }
 
 function buildDashboardData_() {
@@ -240,6 +240,17 @@ function numericTotals_(rows, headers) {
   return totals;
 }
 
-function json_(data) {
-  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+function json_(data, e) {
+  // JSONP is used by the static dashboard to avoid browser CORS restrictions.
+  // The callback is strictly validated so arbitrary JavaScript cannot be injected.
+  const callback = e && e.parameter ? String(e.parameter.prefix || '') : '';
+  const payload = JSON.stringify(data);
+  if (callback) {
+    if (!/^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$/.test(callback)) {
+      return ContentService.createTextOutput('/* Invalid callback */').setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(callback + '(' + payload + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return ContentService.createTextOutput(payload).setMimeType(ContentService.MimeType.JSON);
 }
