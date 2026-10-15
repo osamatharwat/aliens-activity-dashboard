@@ -122,6 +122,8 @@ main{padding:28px clamp(18px,3vw,42px) 50px;max-width:1600px;width:100%;margin:a
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS={green:'#8be45e',green2:'#35b86b',muted:'#93a596',line:'#294231',amber:'#f6c86a',red:'#ff7777'};
+const API_URL='https://script.google.com/macros/s/AKfycbxXbzSwFjyzGFdf66fQTqUJW_YaTbCHMa2sOj5zXKrFTSFY2IWoH-JIOiT9xTRF3tiz/exec';
+let apiState='loading',apiData=null,apiError='';
 const demoRows=[];
 const baseCommittees=[
 {id:'marketing',name:'Marketing',owner:'Marketing Team',goal:5000,metric:'interactions',description:'قياس التفاعلات والوصول وأداء المحتوى والحملات.',formUrl:'',sheetUrl:'',sourceMode:'manual',publishedUrl:''},
@@ -178,7 +180,44 @@ function renderCommittees(){const q=($('#committeeSearch')?.value||'').toLowerCa
 function renderPerformance(){const m=$('#metricFilter')?.value||'interactions',c=$('#performanceCommittee')?.value||'all',months=[...new Set(rows.map(r=>monthOf(r.date)).filter(Boolean))].sort();const list=rows.filter(r=>c==='all'||r.committee===c);const opts=chartDefaults();mkChart('perfLine',{type:'line',data:{labels:months.map(x=>monthNames[Number(x.slice(5,7))-1]+' '+x.slice(2,4)),datasets:[{label:metricLabels[m],data:months.map(mm=>list.filter(r=>monthOf(r.date)===mm).reduce((a,r)=>a+(Number(r[m])||0),0)),borderColor:COLORS.green,backgroundColor:'#8be45e18',fill:true,tension:.3}]},options:{...opts,plugins:{...opts.plugins,legend:{display:false}}}});
 const sums=summarize(list);const top=sums.filter(x=>x[m]||x.goal).sort((a,b)=>b[m]-a[m]).slice(0,10);mkChart('perfBar',{type:'bar',data:{labels:top.map(x=>x.name),datasets:[{label:metricLabels[m],data:top.map(x=>x[m]),backgroundColor:COLORS.green2,borderRadius:5}]},options:{...opts,plugins:{...opts.plugins,legend:{display:false}}}});
 $('#perfTable').innerHTML='<table><thead><tr><th>اللجنة</th><th>المؤشر</th><th>الفعلي</th><th>المستهدف</th><th>الإنجاز</th></tr></thead><tbody>'+sums.map(x=>{const goal=x.goal||0,val=x[m]||0;return '<tr><td>'+esc(x.name)+'</td><td>'+esc(metricLabels[m])+'</td><td>'+num(val)+'</td><td>'+num(goal)+'</td><td>'+pct(val,goal)+'%</td></tr>'}).join('')+'</tbody></table>'}
-function renderSources(){$('#sourceList').innerHTML=committees.filter(c=>c.formUrl||c.sheetUrl||c.publishedUrl).map(c=>'<div class="source-row"><div class="s-icon">↗</div><div class="s-content"><b>'+esc(c.name)+'</b><small>'+(c.publishedUrl?'CSV: '+esc(c.publishedUrl):'Google links')+'</small></div>'+(c.sheetUrl?'<a class="btn" href="'+esc(c.sheetUrl)+'" target="_blank" rel="noopener">Sheet</a>':'')+(c.formUrl?'<a class="btn" href="'+esc(c.formUrl)+'" target="_blank" rel="noopener">Form</a>':'')+(c.publishedUrl?'<button class="btn" data-refresh="'+esc(c.id)+'">تحديث CSV</button>':'')+'</div>').join('')||'<div class="empty">مفيش مصادر مضافة. أضف لجنة واربطها بمصدر من النموذج.</div>';$('#sourceList').querySelectorAll('[data-refresh]').forEach(b=>b.onclick=()=>refreshPublished(b.dataset.refresh));$('#dataStatus').innerHTML='<div class="insight"><span class="bullet"></span><div><b>'+esc(isDemo?'بيانات تجريبية':'بيانات مستوردة')+'</b><p>'+(isDemo?'لم يتم رفع ملف فعلي بعد.':'الملف الحالي: '+esc(lastFile||'مستورد'))+'</p></div></div><div class="insight"><span class="bullet"></span><div><b>عدد السجلات: '+num(rows.length)+'</b><p>الإعدادات محفوظة محليًا على هذا المتصفح فقط.</p></div></div>'}
+function renderSources(){$('#sourceList').innerHTML=committees.filter(c=>c.formUrl||c.sheetUrl||c.publishedUrl).map(c=>'<div class="source-row"><div class="s-icon">↗</div><div class="s-content"><b>'+esc(c.name)+'</b><small>'+(c.publishedUrl?'CSV: '+esc(c.publishedUrl):'Google links')+'</small></div>'+(c.sheetUrl?'<a class="btn" href="'+esc(c.sheetUrl)+'" target="_blank" rel="noopener">Sheet</a>':'')+(c.formUrl?'<a class="btn" href="'+esc(c.formUrl)+'" target="_blank" rel="noopener">Form</a>':'')+(c.publishedUrl?'<button class="btn" data-refresh="'+esc(c.id)+'">تحديث CSV</button>':'')+'</div>').join('')||'<div class="empty">مفيش مصادر مضافة. أضف لجنة واربطها بمصدر من النموذج.</div>';$('#sourceList').querySelectorAll('[data-refresh]').forEach(b=>b.onclick=()=>refreshPublished(b.dataset.refresh));$('#dataStatus').innerHTML='<div class="insight"><span class="bullet"></span><div><b>'+esc(isDemo?'بيانات تجريبية':'بيانات مستوردة')+'</b><p>'+(isDemo?'لم يتم رفع ملف فعلي بعد.':'الملف الحالي: '+esc(lastFile||'لا توجد ملفات مستوردة'))+'</p></div></div><div class="insight"><span class="bullet"></span><div><b>عدد السجلات المحلية: '+num(rows.length)+'</b><p>السجلات المحلية منفصلة عن مصادر Google Sheets.</p></div></div>'+renderApiStatus()}
+function renderApiStatus(){
+ const stateTitle=apiState==='ok'?'اتصال Google Sheets نشط':apiState==='loading'?'جاري الاتصال بمصادر Google Sheets…':'تعذر جلب الاستجابة مؤقتًا';
+ const stateText=apiState==='ok'
+  ? ((apiData?.committees||[]).length+' مصدر مسجل · '+(apiData?.committees||[]).reduce((n,c)=>n+(c.tabs||[]).length,0)+' ورقة مكتشفة. البيانات الفعلية ستظهر عند بدء تسجيلها.')
+  : apiState==='loading'?'بنختبر الاتصال تلقائيًا مع إعادة المحاولة عند الحاجة.':(apiError||'هنعيد المحاولة تلقائيًا.');
+ const details=apiState==='ok'?(apiData.committees||[]).map(c=>esc(c.committee)+' ('+num((c.tabs||[]).length)+' أوراق)').join('، '):'';
+ return '<div class="insight '+(apiState==='ok'?'':'warning')+'"><span class="bullet"></span><div><b>'+esc(stateTitle)+'</b><p>'+esc(stateText)+'</p>'+(details?'<p>'+details+'</p>':'')+'<p><button class="btn" id="retryApiBtn" type="button">إعادة اختبار الاتصال</button></p></div></div>';
+}
+function requestApi(action,attempt=0){
+ return new Promise((resolve,reject)=>{
+  const callback='__aliensApi_'+Date.now()+'_'+Math.floor(Math.random()*100000);
+  let settled=false;
+  const script=document.createElement('script');
+  const timer=setTimeout(()=>finish(new Error('انتهت مهلة الاتصال')),12000);
+  function cleanup(){clearTimeout(timer);script.remove();try{delete window[callback]}catch(e){window[callback]=undefined}}
+  function finish(err,data){if(settled)return;settled=true;cleanup();if(err)reject(err);else resolve(data)}
+  window[callback]=data=>finish(null,data);
+  script.onerror=()=>finish(new Error('تعذرت قراءة استجابة جوجل'));
+  script.src=API_URL+'?action='+encodeURIComponent(action)+'&prefix='+encodeURIComponent(callback)+'&t='+Date.now();
+  document.head.appendChild(script);
+ }).catch(err=>{
+  if(attempt<2)return new Promise(resolve=>setTimeout(resolve,800*(attempt+1))).then(()=>requestApi(action,attempt+1));
+  throw err;
+ });
+}
+async function loadApiData(){
+ apiState='loading';apiError='';renderSources();
+ try{
+  const data=await requestApi('dashboard');
+  if(!data||data.ok!==true)throw new Error('الاستجابة غير متوقعة');
+  apiData=data;apiState='ok';apiError='';
+ }catch(err){
+  apiState='error';apiError='فشل الاتصال بعد 3 محاولات. اضغط إعادة الاختبار لاحقًا.';
+  console.error('ALIENS API:',err);
+ }
+ renderSources();
+}
 function renderPreview(){const data=rows.slice(0,15);$('#previewCount').textContent=rows.length+' سجل · عرض أول '+data.length;$('#previewTable').innerHTML=data.length?'<table><thead><tr><th>التاريخ</th><th>اللجنة</th><th>التفاعلات</th><th>المهام</th><th>الفعاليات</th><th>التسجيلات</th><th>الهدف</th></tr></thead><tbody>'+data.map(r=>'<tr><td>'+esc(r.date)+'</td><td>'+esc(r.committee)+'</td><td>'+num(r.interactions)+'</td><td>'+num(r.tasks)+'</td><td>'+num(r.events)+'</td><td>'+num(r.registrations)+'</td><td>'+num(r.target)+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">لا توجد بيانات لعرضها.</div>'}
 function renderAll(){fillFilters();renderOverview();renderCommittees();renderSources();renderPreview();$('#globalGoal').value=globalGoal}
 const pageTitles={overview:'نظرة عامة على النشاط',committees:'إدارة اللجان',performance:'تحليل الأداء',data:'إدارة البيانات',settings:'الإعدادات ومصادر البيانات'};
@@ -212,6 +251,8 @@ $('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');
 window.addEventListener('resize',()=>{Object.values(charts).forEach(c=>c.resize())});
 if(!Array.isArray(committees))committees=baseCommittees;if(!Array.isArray(rows))rows=[];
 renderAll();
+loadApiData();
+$('#dataStatus').addEventListener('click',e=>{if(e.target&&e.target.id==='retryApiBtn')loadApiData()});
 })();
 </script>
 </body></html>
