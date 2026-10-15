@@ -75,6 +75,7 @@ function buildDashboardData_() {
           headers: parsed.headers,
           fields: parsed.fields,
           metrics: parsed.metrics,
+          analytics: analyzeAllColumns_(parsed),
           records: publicRecords_(parsed, source.committee, sheet.getName())
         };
       });
@@ -90,6 +91,38 @@ function buildDashboardData_() {
   });
   // Public responses contain schema and aggregate metrics only, never raw spreadsheet rows.
   return { ok: true, generatedAt: new Date().toISOString(), committees: committees, errors: errors };
+}
+
+/**
+ * Converts every non-empty column into privacy-safe numeric summaries.
+ * No raw cells are returned. Personal identifiers and free-text notes are never
+ * returned as category labels.
+ */
+function analyzeAllColumns_(parsed) {
+  const sensitive = /(email|e mail|phone|mobile|telephone|contact person|person name|name|notes?|ملاحظات|اسم الشخص|مسؤول التواصل|البريد|الهاتف|التليفون|العنوان)/i;
+  return (parsed.headers || []).map(header => {
+    const values = (parsed.rows || []).map(row => String(row[header] == null ? '' : row[header]).trim()).filter(Boolean);
+    const nums = values.map(v => {
+      const cleaned = v.replace(/[٬,،%$£€\s]/g, '');
+      return /^-?\d+(\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
+    }).filter(v => v !== null);
+    const counts = {};
+    if (!sensitive.test(header)) values.forEach(v => {
+      if (v.length <= 80) counts[v] = (counts[v] || 0) + 1;
+    });
+    const categories = Object.keys(counts).sort((a,b) => counts[b] - counts[a]).slice(0, 8)
+      .map(value => ({ value: value, count: counts[value] }));
+    return {
+      column: header,
+      filledCount: values.length,
+      emptyCount: Math.max(0, (parsed.rows || []).length - values.length),
+      uniqueCount: new Set(values).size,
+      numericCount: nums.length,
+      numericTotal: nums.reduce((sum,n) => sum+n, 0),
+      numericAverage: nums.length ? nums.reduce((sum,n) => sum+n, 0) / nums.length : null,
+      categories: categories
+    };
+  });
 }
 
 function publicRecords_(parsed, committee, sheetName) {
