@@ -63,24 +63,31 @@ function buildDashboardData_() {
   sources.forEach(source => {
     try {
       const ss = SpreadsheetApp.openById(source.spreadsheetId);
-      const sheet = source.sheetName ? ss.getSheetByName(source.sheetName) : chooseDataSheet_(ss);
-      if (!sheet) throw new Error('No data sheet found');
-      const values = sheet.getDataRange().getDisplayValues();
-      const parsed = parseSheet_(values, source.committee, sheet.getName());
+      const sheets = source.sheetName
+        ? [ss.getSheetByName(source.sheetName)].filter(Boolean)
+        : ss.getSheets();
+      if (!sheets.length) throw new Error('No data sheet found');
+      const tabs = sheets.map(sheet => {
+        const parsed = parseSheet_(sheet.getDataRange().getDisplayValues(), source.committee, sheet.getName());
+        return {
+          sheetName: sheet.getName(),
+          rowCount: parsed.rows.length,
+          headers: parsed.headers,
+          fields: parsed.fields,
+          metrics: parsed.metrics
+        };
+      });
       committees.push({
         committee: source.committee,
         sourceName: ss.getName(),
-        sheetName: sheet.getName(),
-        rowCount: parsed.rows.length,
-        headers: parsed.headers,
-        fields: parsed.fields,
-        metrics: parsed.metrics
-        // Raw rows are deliberately excluded from the public API to protect contact names, emails, phone numbers, and notes.
+        rowCount: tabs.reduce((sum, tab) => sum + tab.rowCount, 0),
+        tabs: tabs
       });
     } catch (err) {
       errors.push({ committee: source.committee, error: String(err.message || err) });
     }
   });
+  // Public responses contain schema and aggregate metrics only, never raw spreadsheet rows.
   return { ok: true, generatedAt: new Date().toISOString(), committees: committees, errors: errors };
 }
 
