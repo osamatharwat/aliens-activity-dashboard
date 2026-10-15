@@ -7,7 +7,7 @@
  * 2) Paste this file into Code.gs and save.
  * 3) Run setup() once and authorize it.
  * 4) Add source spreadsheet IDs with registerSource("PR", "SPREADSHEET_ID").
- * 5) Deploy as Web app. Public dashboard reads only aggregated/normalized data.
+ * 5) Deploy as Web app only after reviewing access settings. Public dashboard returns aggregates only.
  *
  * IMPORTANT: Do not use a public web-app deployment for admin writes until admin
  * authentication is configured and tested. This starter exposes read-only data only.
@@ -74,8 +74,8 @@ function buildDashboardData_() {
         rowCount: parsed.rows.length,
         headers: parsed.headers,
         fields: parsed.fields,
-        metrics: parsed.metrics,
-        rows: parsed.rows
+        metrics: parsed.metrics
+        // Raw rows are deliberately excluded from the public API to protect contact names, emails, phone numbers, and notes.
       });
     } catch (err) {
       errors.push({ committee: source.committee, error: String(err.message || err) });
@@ -181,7 +181,7 @@ function inferField_(header) {
     ['rejectionReason', /(rejection reason|سبب الرفض|اسباب الرفض)/],
     ['notes', /(^notes?$|ملاحظات|تفاصيل اضافيه)/],
     ['reportType', /(report type|نوع التقرير)/],
-    ['interactions', /(interactions?|engagements?|التفاعلات|التفاعل)/],
+    ['interactions', /(interactions?|engagements?|shares?|number of shares|عدد المشاركات|المشاركات|التفاعلات|التفاعل)/],
     ['followers', /(new followers|followers gained|متابعين جدد|المتابعين الجدد)/],
     ['messages', /(messages?|الرسائل|عدد الرسائل)/],
     ['reach', /(^reach$|الوصول|مدي الوصول)/],
