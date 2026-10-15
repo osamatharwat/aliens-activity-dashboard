@@ -93,9 +93,12 @@ function buildDashboardData_() {
 }
 
 function publicRecords_(parsed, committee, sheetName) {
-  const safeFields = ['date','interactions','followers','messages','reach','tasks','target','status','outcome','reportType'];
+  const safeFields = ['date','interactions','followers','messages','reach','tasks','target','status','outcome','reportType','events','registrations'];
+  const knownCommittees = ['Marketing','PR','IR','Data Analysis','Planning','Media','Secretary','Magic Hand','Treasure','Charity'];
+  const tabCommittee = knownCommittees.find(name => normalizeText_(name) === normalizeText_(sheetName));
+  const recordCommittee = tabCommittee || committee;
   return (parsed.rows || []).map(row => {
-    const record = { committee: committee, sheet: sheetName, record: 1 };
+    const record = { committee: recordCommittee, sheet: sheetName, record: 1 };
     safeFields.forEach(field => { const def = parsed.fields && parsed.fields[field]; if (def) record[field] = row[def.header] == null ? '' : row[def.header]; });
     return record;
   }).filter(record => safeFields.some(field => String(record[field] || '').trim() !== ''));
@@ -202,7 +205,9 @@ function inferField_(header) {
     ['followers', /(new followers|followers gained|متابعين جدد|المتابعين الجدد)/],
     ['messages', /(messages?|الرسائل|عدد الرسائل)/],
     ['reach', /(^reach$|الوصول|مدي الوصول)/],
-    ['tasks', /(tasks completed|completed tasks|المهام المكتمله)/],
+    ['tasks', /(tasks completed|completed tasks|completed task|tasks|المهام المكتمله|المهام المنجزة)/],
+    ['events', /(events count|number of events|events|عدد الفعاليات|الفعاليات)/],
+    ['registrations', /(registrations|registered participants|عدد التسجيلات|التسجيلات)/],
     ['target', /(^target$|goal|المستهدف|الهدف)/]
   ];
   for (const rule of rules) if (rule[1].test(h)) return rule[0];
