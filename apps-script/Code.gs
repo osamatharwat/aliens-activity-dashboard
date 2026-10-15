@@ -74,7 +74,8 @@ function buildDashboardData_() {
           rowCount: parsed.rows.length,
           headers: parsed.headers,
           fields: parsed.fields,
-          metrics: parsed.metrics
+          metrics: parsed.metrics,
+          records: publicRecords_(parsed, source.committee, sheet.getName())
         };
       });
       committees.push({
@@ -89,6 +90,15 @@ function buildDashboardData_() {
   });
   // Public responses contain schema and aggregate metrics only, never raw spreadsheet rows.
   return { ok: true, generatedAt: new Date().toISOString(), committees: committees, errors: errors };
+}
+
+function publicRecords_(parsed, committee, sheetName) {
+  const safeFields = ['date','interactions','followers','messages','reach','tasks','target','status','outcome','reportType'];
+  return (parsed.rows || []).map(row => {
+    const record = { committee: committee, sheet: sheetName, record: 1 };
+    safeFields.forEach(field => { const def = parsed.fields && parsed.fields[field]; if (def) record[field] = row[def.header] == null ? '' : row[def.header]; });
+    return record;
+  }).filter(record => safeFields.some(field => String(record[field] || '').trim() !== ''));
 }
 
 function getSchemaReport_() {
