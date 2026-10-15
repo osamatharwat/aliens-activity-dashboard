@@ -122,39 +122,7 @@ main{padding:28px clamp(18px,3vw,42px) 50px;max-width:1600px;width:100%;margin:a
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const COLORS={green:'#8be45e',green2:'#35b86b',muted:'#93a596',line:'#294231',amber:'#f6c86a',red:'#ff7777'};
-const demoRows=[
-{date:'2026-04-05',committee:'Marketing',interactions:4200,tasks:12,events:1,registrations:80,target:5000},
-{date:'2026-04-15',committee:'Marketing',interactions:4680,tasks:14,events:2,registrations:110,target:5000},
-{date:'2026-05-04',committee:'Marketing',interactions:5100,tasks:16,events:2,registrations:125,target:5000},
-{date:'2026-05-21',committee:'Marketing',interactions:5600,tasks:18,events:3,registrations:170,target:5000},
-{date:'2026-06-07',committee:'Marketing',interactions:3920,tasks:11,events:1,registrations:95,target:5000},
-{date:'2026-06-22',committee:'Marketing',interactions:4450,tasks:15,events:2,registrations:120,target:5000},
-{date:'2026-07-06',committee:'Marketing',interactions:4850,tasks:18,events:3,registrations:135,target:5000},
-{date:'2026-08-06',committee:'Marketing',interactions:5300,tasks:19,events:3,registrations:190,target:5000},
-{date:'2026-09-05',committee:'Marketing',interactions:4100,tasks:16,events:2,registrations:145,target:5000},
-{date:'2026-10-05',committee:'Marketing',interactions:4700,tasks:17,events:2,registrations:160,target:5000},
-{date:'2026-04-10',committee:'PR',interactions:1200,tasks:8,events:1,registrations:60,target:1800},
-{date:'2026-05-10',committee:'PR',interactions:1900,tasks:10,events:2,registrations:90,target:1800},
-{date:'2026-06-10',committee:'PR',interactions:1500,tasks:7,events:1,registrations:70,target:1800},
-{date:'2026-07-10',committee:'PR',interactions:2100,tasks:12,events:2,registrations:105,target:1800},
-{date:'2026-08-10',committee:'PR',interactions:2300,tasks:13,events:3,registrations:120,target:1800},
-{date:'2026-09-10',committee:'PR',interactions:1750,tasks:9,events:1,registrations:85,target:1800},
-{date:'2026-10-10',committee:'PR',interactions:2200,tasks:11,events:2,registrations:100,target:1800},
-{date:'2026-04-08',committee:'Media',interactions:2400,tasks:10,events:1,registrations:50,target:3000},
-{date:'2026-05-08',committee:'Media',interactions:2800,tasks:12,events:2,registrations:80,target:3000},
-{date:'2026-06-08',committee:'Media',interactions:3200,tasks:13,events:2,registrations:95,target:3000},
-{date:'2026-07-08',committee:'Media',interactions:2700,tasks:10,events:2,registrations:75,target:3000},
-{date:'2026-08-08',committee:'Media',interactions:3500,tasks:15,events:3,registrations:115,target:3000},
-{date:'2026-09-08',committee:'Media',interactions:2900,tasks:14,events:2,registrations:100,target:3000},
-{date:'2026-10-08',committee:'Media',interactions:3300,tasks:16,events:3,registrations:130,target:3000},
-{date:'2026-04-12',committee:'Planning',interactions:600,tasks:9,events:1,registrations:10,target:1000},
-{date:'2026-05-12',committee:'Planning',interactions:900,tasks:11,events:1,registrations:20,target:1000},
-{date:'2026-06-12',committee:'Planning',interactions:800,tasks:10,events:1,registrations:15,target:1000},
-{date:'2026-07-12',committee:'Planning',interactions:1200,tasks:14,events:2,registrations:30,target:1000},
-{date:'2026-08-12',committee:'Planning',interactions:950,tasks:12,events:1,registrations:25,target:1000},
-{date:'2026-09-12',committee:'Planning',interactions:1050,tasks:14,events:1,registrations:35,target:1000},
-{date:'2026-10-12',committee:'Planning',interactions:1300,tasks:15,events:2,registrations:40,target:1000}
-];
+const demoRows=[];
 const baseCommittees=[
 {id:'marketing',name:'Marketing',owner:'Marketing Team',goal:5000,metric:'interactions',description:'قياس التفاعلات والوصول وأداء المحتوى والحملات.',formUrl:'',sheetUrl:'',sourceMode:'manual',publishedUrl:''},
 {id:'pr',name:'PR',owner:'PR Team',goal:1800,metric:'interactions',description:'العلاقات العامة والتواصل والتسجيلات.',formUrl:'',sheetUrl:'',sourceMode:'manual',publishedUrl:''},
@@ -169,8 +137,8 @@ const baseCommittees=[
 ];
 const load=(key,fallback)=>{try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch{return fallback}};
 let committees=load('aliens_committees_v1',baseCommittees);
-let rows=load('aliens_rows_v1',demoRows);
-let isDemo=load('aliens_is_demo_v1',true);
+let rows=[]; // Start empty; no demo or stale local rows are loaded.
+let isDemo=false;
 let globalGoal=Number(load('aliens_global_goal_v1',5000))||5000;
 let lastFile=load('aliens_file_name_v1','');
 let charts={};
@@ -242,7 +210,7 @@ $('#exportBtn').onclick=()=>{const lines=[['اللجنة','التفاعلات','
 $$('.nav button').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.page)));$$('[data-goto]').forEach(b=>b.addEventListener('click',()=>goPage(b.dataset.goto)));
 $('#menuBtn').onclick=()=>$('#sidebar').classList.toggle('open');
 window.addEventListener('resize',()=>{Object.values(charts).forEach(c=>c.resize())});
-if(!Array.isArray(committees))committees=baseCommittees;if(!Array.isArray(rows))rows=demoRows;
+if(!Array.isArray(committees))committees=baseCommittees;if(!Array.isArray(rows))rows=[];
 renderAll();
 })();
 </script>
