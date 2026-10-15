@@ -46,6 +46,32 @@ GitHub Pages يستضيف واجهة ثابتة فقط. هذه النسخة لا
 ## البيانات التجريبية
 المعاينة الأولية تستخدم سجلات افتراضية لتوضيح الرسوم، وتُوسم بوضوح بأنها بيانات تجريبية. استخدم **إدارة البيانات → استيراد ملف** لاستبدالها ببيانات النشاط الفعلية.
 
+
+## Google Apps Script: automatic source inspection (new)
+
+A starter backend is available at `apps-script/Code.gs`. It inspects the actual column headers and values in each registered spreadsheet, infers common fields in Arabic/English, and returns a schema report plus normalized dashboard data. It can discover fields such as date, event, organization, contact, follow-up date, status, outcome, report type, interactions, followers, messages, reach, tasks, and targets. Unknown columns are preserved instead of being discarded.
+
+### Setup
+1. Open [Google Apps Script](https://script.google.com/) using the Google account that has permission to read the source spreadsheets.
+2. Create a new project named `ALIENS Dashboard Backend`.
+3. Copy the contents of `apps-script/Code.gs` from this repository into the project's `Code.gs` file and save.
+4. Run `setup` once from the editor and approve the requested permissions.
+5. Register each source from the Apps Script editor. Example:
+   ```javascript
+   registerSource('PR', '1rAscFdi80tBkLEuG2uxIms92Zlx18CBz-XNM0mVsvOY');
+   ```
+   Use a spreadsheet ID, not the full URL. The ID is the segment between `/d/` and `/edit`. This command stores the ID in Script Properties, not in the public GitHub files. It reads the spreadsheet using the account that runs the script.
+6. To inspect the inferred headers and sheet tabs, run `getSchemaReport_` from the editor, or deploy the web app and open its `?action=schema` endpoint.
+7. To return dashboard data, use `?action=dashboard`; to test service availability, use `?action=health`.
+
+### Deployment and safety notes
+- The current Apps Script connector is **read-only**. It does not write to source spreadsheets or implement admin login yet.
+- For an initial read-only test, deploy as a web app with an execution identity that can access the registered sheets. Carefully review who can access the deployment before publishing it. Do not expose personally identifying contact details from PR sheets in a public dashboard.
+- The script returns source rows and detected headers for diagnostics. Before public launch, limit the response to safe aggregate fields or add an explicit public-field allowlist; do not expose personal names, email addresses, or phone numbers to anonymous visitors.
+- Do not put passwords, password hashes, API keys, or private credentials in this repository. Admin authentication and protected settings changes must be implemented and tested separately before enabling writes.
+- Google Forms are not spreadsheets. To analyze form submissions, link the Form to a response spreadsheet first, then register that response spreadsheet. This can be done later for Secretary.
+- This connector is a first implementation of automatic schema detection, not a claim that every custom column's business meaning can be inferred perfectly. Review the generated schema report and use explicit mappings when labels are ambiguous.
+
 ## الملفات
 - `index.html`: التطبيق الكامل.
 - `.github/workflows/pages.yml`: نشر GitHub Pages عبر GitHub Actions.
